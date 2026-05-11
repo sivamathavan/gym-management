@@ -12,6 +12,8 @@ export default function MemberDetailPage() {
   const [qrData, setQrData] = React.useState(null);
   const [showQr, setShowQr] = React.useState(false);
 
+  const { data: member, isLoading } = useQuery(['member', id], () => membersApi.get(id).then(r => r.data));
+
   const generateQR = async () => {
     try {
       const res = await attendanceApi.generateQR(id);
@@ -22,43 +24,43 @@ export default function MemberDetailPage() {
     }
   };
 
-  if (isLoading) return <div className="text-center py-20 text-gray-400">Loading member...</div>;
-  if (!member) return <div className="text-center py-20 text-gray-400">Member not found</div>;
+  if (isLoading) return <div className="text-center py-20 text-gray-500 font-medium">Loading member...</div>;
+  if (!member) return <div className="text-center py-20 text-gray-500 font-medium">Member not found</div>;
 
   const daysLeft = dayjs(member.membership_end).diff(dayjs(), 'day');
   const isExpiringSoon = daysLeft <= 14 && member.status === 'active';
   const isExpired = member.status === 'expired';
 
   return (
-    <div className="max-w-4xl space-y-5">
+    <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/members')} className="text-gray-400 hover:text-gray-700 text-sm">← Members</button>
+        <button onClick={() => navigate('/members')} className="text-gray-400 hover:text-white text-sm font-medium transition-colors">← Back to Members</button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-6">
+      <div className="bg-dark-800 rounded-2xl border border-dark-600 p-8 shadow-xl">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-lg font-semibold text-emerald-700">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-dark-700 border border-dark-600 flex items-center justify-center text-xl font-bold text-gray-300">
               {member.name.slice(0,2).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">{member.name}</h1>
-              <div className="text-sm text-gray-400">{member.member_code} · {member.branch_name}</div>
-              <span className={`inline-flex mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                member.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+              <h1 className="text-2xl font-bold text-white mb-1">{member.name}</h1>
+              <div className="text-sm text-gray-400 font-medium">{member.member_code} • {member.branch_name}</div>
+              <span className={`inline-flex mt-2 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
+                member.status === 'active' ? 'bg-neon-500/10 text-neon-500 border border-neon-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                 {member.status}
               </span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button onClick={generateQR}
-              className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 text-sm px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              className="flex items-center gap-2 bg-dark-700 border border-dark-600 text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-dark-600 hover:border-dark-500 transition-colors">
               Generate QR
             </button>
             {(isExpiringSoon || isExpired) && (
               <Link to={`/members/${id}/renew`}
-                className="bg-emerald-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors">
-                Renew
+                className="bg-neon-500 text-dark-900 text-sm font-bold px-5 py-2.5 rounded-full hover:bg-neon-400 transition-all shadow-[0_0_15px_rgba(179,255,64,0.2)]">
+                Renew Plan
               </Link>
             )}
           </div>
@@ -67,51 +69,51 @@ export default function MemberDetailPage() {
 
       {/* QR Modal */}
       {showQr && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-xs w-full text-center space-y-4">
-            <h3 className="text-lg font-semibold">Check-in QR Code</h3>
-            <div className="bg-gray-50 rounded-xl p-4 flex justify-center">
-              <img src={qrData?.qr} alt="QR Code" className="w-48 h-48" />
+        <div className="fixed inset-0 bg-dark-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-800 border border-dark-600 rounded-3xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl">
+            <h3 className="text-xl font-bold text-white">Check-in QR Code</h3>
+            <div className="bg-white rounded-2xl p-5 flex justify-center shadow-[0_0_30px_rgba(179,255,64,0.15)]">
+              <img src={qrData?.qr} alt="QR Code" className="w-52 h-52" />
             </div>
-            <div className="text-xs text-gray-400">Valid for 5 minutes</div>
-            <button onClick={() => setShowQr(false)} className="w-full py-2 bg-gray-100 rounded-lg text-sm font-medium">Close</button>
+            <div className="text-xs font-medium text-gray-500">Valid for 5 minutes</div>
+            <button onClick={() => setShowQr(false)} className="w-full py-3 bg-dark-700 hover:bg-dark-600 border border-dark-600 rounded-full text-sm font-bold text-white transition-colors">Close</button>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-5">
         {[
           { label: 'Visits this month', value: member.visits_this_month },
           { label: 'Total visits', value: member.total_visits },
           { label: 'Loyalty points', value: member.loyalty_points },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <div className="text-2xl font-semibold text-gray-900">{s.value}</div>
-            <div className="text-xs text-gray-400 mt-1">{s.label}</div>
+          <div key={s.label} className="bg-dark-800 rounded-2xl border border-dark-600 p-6 text-center hover:border-dark-500 transition-colors">
+            <div className="text-3xl font-extrabold text-white">{s.value}</div>
+            <div className="text-xs font-medium uppercase tracking-wider text-gray-500 mt-2">{s.label}</div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <div className="text-sm font-medium text-gray-900 mb-3">Membership</div>
+      <div className="grid grid-cols-2 gap-5">
+        <div className="bg-dark-800 rounded-2xl border border-dark-600 p-7">
+          <div className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-5">Membership Details</div>
           {[
-            ['Plan', member.plan_name],
+            ['Plan', <span className="bg-neon-500/10 text-neon-500 border border-neon-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{member.plan_name}</span>],
             ['Price', `₹${member.plan_price}/period`],
             ['Start', dayjs(member.membership_start).format('D MMM YYYY')],
             ['Expires', dayjs(member.membership_end).format('D MMM YYYY')],
-            ['Days remaining', isExpired ? 'Expired' : `${daysLeft} days`],
-            ['Auto-renewal', member.auto_renewal ? 'Enabled' : 'Disabled'],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between py-2 border-b border-gray-50 last:border-0 text-sm">
-              <span className="text-gray-400">{k}</span>
-              <span className="font-medium text-gray-900">{v}</span>
+            ['Days remaining', isExpired ? <span className="text-red-400">Expired</span> : <span className="text-amber-400">{daysLeft} days</span>],
+            ['Auto-renewal', member.auto_renewal ? <span className="text-neon-500">Enabled</span> : 'Disabled'],
+          ].map(([k, v], i) => (
+            <div key={i} className="flex justify-between py-3 border-b border-dark-700 last:border-0 text-sm">
+              <span className="text-gray-400 font-medium">{k}</span>
+              <span className="font-bold text-white">{v}</span>
             </div>
           ))}
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <div className="text-sm font-medium text-gray-900 mb-3">Contact Info</div>
+        <div className="bg-dark-800 rounded-2xl border border-dark-600 p-7">
+          <div className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-5">Contact Info</div>
           {[
             ['Phone', member.phone],
             ['Email', member.email || '—'],
@@ -119,29 +121,29 @@ export default function MemberDetailPage() {
             ['DOB', member.date_of_birth ? dayjs(member.date_of_birth).format('D MMM YYYY') : '—'],
             ['Emergency', member.emergency_contact || '—'],
             ['Address', member.address || '—'],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between py-2 border-b border-gray-50 last:border-0 text-sm">
-              <span className="text-gray-400">{k}</span>
-              <span className="font-medium text-gray-900 text-right max-w-48 truncate">{v}</span>
+          ].map(([k, v], i) => (
+            <div key={i} className="flex justify-between py-3 border-b border-dark-700 last:border-0 text-sm">
+              <span className="text-gray-400 font-medium">{k}</span>
+              <span className="font-medium text-white text-right max-w-[200px] truncate">{v}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Recent attendance */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <div className="text-sm font-medium text-gray-900 mb-3">Recent Attendance</div>
+      <div className="bg-dark-800 rounded-2xl border border-dark-600 p-7">
+        <div className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-5">Recent Attendance</div>
         {member.recent_attendance?.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {member.recent_attendance.map((a, i) => (
-              <div key={i} className="flex justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
-                <span className="text-gray-900">{dayjs(a.check_in_at).format('D MMM YYYY, h:mm A')}</span>
-                <span className="text-xs text-gray-400 capitalize">{a.method}</span>
+              <div key={i} className="flex justify-between items-center text-sm py-3 border-b border-dark-700 last:border-0 hover:bg-dark-700/30 px-3 rounded-lg transition-colors cursor-default">
+                <span className="font-medium text-white">{dayjs(a.check_in_at).format('D MMM YYYY, h:mm A')}</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-dark-700 px-2 py-1 rounded">{a.method}</span>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-sm text-gray-400">No attendance records yet</div>
+          <div className="text-sm font-medium text-gray-500 py-4 text-center">No attendance records yet</div>
         )}
       </div>
     </div>

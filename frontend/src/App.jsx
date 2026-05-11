@@ -17,6 +17,8 @@ import BranchesPage from './pages/BranchesPage';
 import SettingsPage from './pages/SettingsPage';
 import RenewalPage from './pages/RenewalPage';
 
+import LandingPage from './pages/LandingPage';
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30000 } }
 });
@@ -38,9 +40,9 @@ export default function App() {
       <BrowserRouter>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+          <Route path="/login" element={token ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="members" element={<MembersPage />} />
             <Route path="members/add" element={<AddMemberPage />} />
