@@ -1,0 +1,8 @@
+node_modules
+.env
+backend.log
+frontend.log
+{backend
+dist
+build
+.DS_Store
